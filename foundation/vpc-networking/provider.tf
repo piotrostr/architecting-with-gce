@@ -1,5 +1,5 @@
-
 provider "google" {
-  project = "{{ .Project }}"
-  region  = "{{ .Region }}"
+  project = var.project
+  region  = var.region
+  zone = var.zone
 }
