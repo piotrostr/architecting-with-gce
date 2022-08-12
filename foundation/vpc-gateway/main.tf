@@ -4,10 +4,11 @@ resource "google_compute_network" "course_network" {
 }
 
 resource "google_compute_subnetwork" "course_subnetwork" {
-  name          = "course-subnetwork"
-  ip_cidr_range = "10.130.0.0/20"
-  region        = var.region
-  network       = google_compute_network.course_network.id
+  name                     = "course-subnetwork"
+  ip_cidr_range            = "10.130.0.0/20"
+  region                   = var.region
+  network                  = google_compute_network.course_network.id
+  private_ip_google_access = true
 }
 
 resource "google_compute_firewall" "web_ssh_firewall" {
@@ -23,6 +24,10 @@ resource "google_compute_firewall" "web_ssh_firewall" {
     ports    = ["80", "22", "443"]
     protocol = "tcp"
   }
+
+  # adding this access source ranges enables connecting to the VM
+  # it also makes it so that EGRESS is blocked
+  source_ranges = ["35.235.240.0/20"]
 }
 
 resource "google_compute_instance" "course_instance" {
