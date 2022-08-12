@@ -30,20 +30,34 @@ resource "google_compute_firewall" "web_ssh_firewall" {
   source_ranges = ["35.235.240.0/20"]
 }
 
-resource "google_compute_instance" "course_instance" {
-  name           = "course-instance"
-  machine_type   = "n1-standard-1"
-  zone           = "${var.region}-c"
-  can_ip_forward = true
+resource "google_compute_router" "course_router" {
+  name    = "course-router"
+  network = google_compute_network.course_network.id
+}
 
-  network_interface {
-    network    = google_compute_network.course_network.id
-    subnetwork = google_compute_subnetwork.course_subnetwork.id
+resource "google_compute_router_nat" "course_nat" {
+  name                               = "course-nat"
+  router                             = google_compute_router.course_router.id
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  subnetwork {
+    name                    = google_compute_subnetwork.course_subnetwork.name
+    source_ip_ranges_to_nat = ["ALL_IP_RANGES"]
   }
 
-  boot_disk {
-    initialize_params {
-      image = "debian-10-buster-v20220719"
-    }
+  log_config {
+    enable = true
+    filter = "ALL"
   }
+
+}
+
+module "course_instance" {
+  source     = "./instance"
+  count      = 1
+  name       = format("course-instance-%d", count.index)
+  network    = google_compute_network.course_network.id
+  subnetwork = google_compute_subnetwork.course_subnetwork.id
+  region     = var.region
 }
