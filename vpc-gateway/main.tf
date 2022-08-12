@@ -54,7 +54,7 @@ resource "google_compute_router_nat" "course_nat" {
 }
 
 module "course_instance" {
-  source     = "./instance"
+  source     = "../modules/instance"
   count      = 1
   name       = format("course-instance-%d", count.index)
   network    = google_compute_network.course_network.id
