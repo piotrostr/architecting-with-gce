@@ -8,6 +8,7 @@ variable "network" {
 
 variable "subnetwork" {
   type = string
+  default = null
 }
 
 variable "region" {
