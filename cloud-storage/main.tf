@@ -26,6 +26,14 @@ resource "google_service_account_iam_binding" "bucket_admin" {
   role = "roles/iam.serviceAccountUser"
 }
 
+resource "google_storage_bucket_iam_binding" "bucket_editor" {
+  bucket = google_storage_bucket.course_bucket.id
+  members = [
+    "serviceAccount:${google_service_account.bucket_editor.email}",
+  ]
+  role = "roles/storage.objectViewer"
+}
+
 output "credentials" {
   sensitive = true
   value = google_service_account_key.name.private_key
