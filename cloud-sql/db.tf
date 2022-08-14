@@ -1,5 +1,6 @@
 // cloud sql stuff
 resource "google_sql_database_instance" "db_instance" {
+  root_password    = var.password
   database_version = "POSTGRES_14"
   region           = "us-central1"
 

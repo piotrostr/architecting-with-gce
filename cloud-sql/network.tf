@@ -42,6 +42,11 @@ resource "google_compute_firewall" "proxy_firewall" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["proxy-instance"]
 
+  // allow pings as well
+  allow {
+    protocol = "icmp"
+  }
+
   allow {
     protocol = "tcp"
     ports    = ["22", "3306"]
