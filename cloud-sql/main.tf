@@ -34,12 +34,27 @@ resource "google_compute_address" "static_public_ip_eu" {
   address_type = "EXTERNAL" // or "INTERNAL", and specify the subnetwork
 }
 
+resource "google_compute_firewall" "proxy_firewall" {
+  project = var.project
+  name        = "proxy-firewall"
+  description = "Opens the 3306 port"
+  network     = google_compute_network.vpc.name
+  source_ranges = ["0.0.0.0/0"]
+  target_tags  = ["proxy-instance"]
+
+  allow {
+    protocol = "tcp"
+    ports    = ["3306"]
+  }
+}
+
 resource "google_compute_firewall" "web_rules" {
   project     = var.project
   name        = "web-rules"
-  network     = google_compute_network.vpc.name
   description = "Creates INGRESS firewall rule targeting tagged instances"
+  network     = google_compute_network.vpc.name
   source_ranges = [ "0.0.0.0/0" ]
+  target_tags = ["web"]
 
   // allow pings as well
   allow {
@@ -50,7 +65,6 @@ resource "google_compute_firewall" "web_rules" {
     protocol = "tcp"
     ports    = ["22", "80", "8080", "443"]
   }
-  target_tags = ["web"]
 }
 
 // instance stuff
@@ -59,11 +73,11 @@ data "google_compute_image" "debian" {
   family  = "debian-11"
 }
 
-resource "google_compute_instance" "wordpress_instance_eu" {
-  name         = "wordpress-instance-eu"
+resource "google_compute_instance" "proxy_instance_eu" {
+  name         = "proxy-instance-eu"
   machine_type = "e2-small"
   zone         = "europe-west1-b"
-  tags         = ["web"]
+  tags         = ["proxy-instance"]
 
   network_interface {
     subnetwork = google_compute_subnetwork.proxy_instance_subnetwork.name
@@ -76,12 +90,6 @@ resource "google_compute_instance" "wordpress_instance_eu" {
     access_config {
       nat_ip = google_compute_address.static_public_ip_eu.address
     }
-
-    // include the following to also get a public IPv6 address
-    ipv6_access_config {
-      network_tier = "PREMIUM"
-    }
-
   }
 
   boot_disk {
