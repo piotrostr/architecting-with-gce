@@ -99,3 +99,25 @@ resource "google_compute_instance" "server_2" {
     }
   }
 }
+
+resource "google_compute_address" "static_address_1" {
+  name = "address-1"
+}
+
+resource "google_compute_address" "static_address_2" {
+  name = "address-2"
+}
+
+resource "google_compute_vpn_gateway" "vpn_gateway_1" {
+  name    = "vpn-1"
+  network = google_compute_network.network_1.name
+  region  = "us-central1"
+}
+
+resource "google_compute_vpn_tunnel" "tunnel_1to2" {
+  name                    = "tunnel-between-networks"
+  shared_secret           = "gcprocks"
+  vpn_gateway             = google_compute_vpn_gateway.vpn_gateway_1.name
+  remote_traffic_selector = ["10.128.0.0/24"]
+  peer_ip                 = google_compute_address.static_address_2.address
+}
