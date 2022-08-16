@@ -1,0 +1,32 @@
+steps:
+  - name: golang:1.19
+    entrypoint: go
+    args: ["mod", "download"]
+
+  - name: golang:1.19
+    entrypoint: go
+    args: ["test", "./..."]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t',
+      'us-central1-docker.pkg.dev/${PROJECT_ID}',
+      '.',
+    ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}']
+
+  # optional
+  # - name: google/cloud-sdk
+  #   args: [
+  #     'gcloud', 
+  #     'run',
+  #     'deploy', 
+  #     'helloworld-${SHORT_SHA}', 
+  #        '--image=us-central1-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/myimage:${SHORT_SHA}', 
+  #        '--region=us-central1', 
+  #        '--platform=managed', 
+  #        '--allow-unauthenticated',
+  #     ]
