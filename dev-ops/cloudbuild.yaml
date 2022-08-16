@@ -7,26 +7,33 @@ steps:
     entrypoint: go
     args: ["test", "./..."]
 
+      # NOTE the pipeline requires the repository to exist and be exported as
+      # env var here
+
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
       '-t',
-      'us-central1-docker.pkg.dev/${PROJECT_ID}',
+      'us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}',
       '.',
     ]
 
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}']
+    args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}']
 
-  # optional
-  # - name: google/cloud-sdk
-  #   args: [
-  #     'gcloud', 
-  #     'run',
-  #     'deploy', 
-  #     'helloworld-${SHORT_SHA}', 
-  #        '--image=us-central1-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/myimage:${SHORT_SHA}', 
-  #        '--region=us-central1', 
-  #        '--platform=managed', 
-  #        '--allow-unauthenticated',
-  #     ]
+  - name: google/cloud-sdk
+    args: [
+      'gcloud',
+      'run',
+      'deploy',
+      'helloworld-${SHORT_SHA}',
+         '--image=us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}',
+         '--region=us-central1',
+         '--platform=managed',
+         # edit below to prevent unauthenticated access
+         '--allow-unauthenticated',
+      ]
+
+options:
+  env:
+    - 'PUT_VALUES=here'
